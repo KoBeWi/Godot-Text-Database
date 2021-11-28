@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=2]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Node2D
+
+func _ready() -> void:
+	print(DataStorage.new(\"res://Enemies1.cfg\").get_array())
+"
+
+[node name="Node2D" type="Node2D"]
+script = SubResource( 1 )
