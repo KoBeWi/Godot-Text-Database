@@ -10,10 +10,22 @@ config_version=4
 
 _global_script_classes=[ {
 "base": "Reference",
-"class": "DataStorage",
+"class": "TextDatabase",
 "language": "GDScript",
-"path": "res://DataStorage.gd"
+"path": "res://TextDatabase.gd"
 } ]
 _global_script_class_icons={
-"DataStorage": ""
+"TextDatabase": ""
 }
+
+[application]
+
+config/name="Text Database Example"
+
+[debug]
+
+gdscript/warnings/enable=false
+
+[display]
+
+window/dpi/allow_hidpi=true

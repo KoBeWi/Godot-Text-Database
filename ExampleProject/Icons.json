@@ -1,9 +1,17 @@
-[Icon1]
-color = "ff0000"
+[
+    {
+        "name": "Icon4",
+        "color": "ffff00"
+    },
 
-[Icon2]
-color = "00ff00"
+    {
+        "name": "Icon5",
+        "color": "00ffff",
+        "scalef": 1.2
+    },
 
-[Icon3]
-color = "0000ff"
-scale = Vector2(0.5, 1)
+    {
+        "name": "Icon6",
+        "color": "ff00ff"
+    }
+]
