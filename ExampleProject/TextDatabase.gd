@@ -24,19 +24,19 @@ var is_typed: bool
 ## If true, properties in the entry will be checked against any provided list and raise an error if the property is not recognized.
 var is_validated: bool
 
-## Called right after creation. Can be used to setup non-constant properties etc.
+## Virtual. Called right after creation. Can be used to setup lists etc.
 func _initialize() -> void:
 	pass
 
-## Called for every entry before it is processed (validated, checked for mandatory entries etc.).
+## Virtual. Called for every entry before it is processed (validated, checked for mandatory entries etc.).
 func _preprocess_entry(entry: Dictionary) -> void:
 	pass
 
-## If is_validated is true, this will be called if regular validation fails. Can be used for custom entries that follow non-standard format.
+## Virtual. If is_validated is true, this will be called if regular validation fails. Can be used for custom entries that follow non-standard format.
 func _custom_validate(entry: Dictionary, property: String) -> bool:
 	return false
 
-## Called for every entry after it is processed.
+## Virtual. Called for every entry after it is processed.
 func _postprocess_entry(entry: Dictionary) -> void:
 	pass
 
@@ -78,12 +78,7 @@ static func load(storage_script: String, path: String) -> TextDatabase:
 	
 	return storage
 
-var __data: Array
-var __data_dirty: bool
-var __dict: Dictionary
-var __last_id: int
-var __properties_validated: bool
-
+## Loads data from the given file. Can be called multiple times and the new data will be appended to the database with incrementing IDs.
 func load_from_path(path: String):
 	if not __properties_validated:
 		__assert_validity()
@@ -167,6 +162,12 @@ func load_from_path(path: String):
 	
 	__data.append_array(data)
 	__data_dirty = true
+
+var __data: Array
+var __data_dirty: bool
+var __dict: Dictionary
+var __last_id: int
+var __properties_validated: bool
 
 func _init():
 	_initialize()
