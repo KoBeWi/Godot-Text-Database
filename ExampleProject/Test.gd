@@ -7,6 +7,7 @@ func _ready() -> void:
 	icons.load_from_path("Icons.cfg")
 	icons.load_from_path("Icons.json")
 	
+	# Create icons, reading their color and scale from the database.
 	for entry in icons.get_array():
 		var icon := Sprite.new()
 		icon.name = entry.name

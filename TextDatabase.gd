@@ -21,7 +21,7 @@ var default_properties: Dictionary
 ## If true, property types will be validated when possible (including checking against default properties). Automatically set to true if any mandatory or valid property has a type provided.
 var is_typed: bool
 
-## If true, properties in the entry will be checked against any provided list and raise an error if the property is not recognized.
+## If true, properties in the entry will be checked against 'mandatory' and 'valid' lists and raise an error if the property is not recognized. Automatically set to true if valid_properties list is not empty.
 var is_validated: bool
 
 ## Virtual. Called right after creation. Can be used to setup lists etc.
@@ -44,8 +44,8 @@ func _postprocess_entry(entry: Dictionary) -> void:
 func get_array() -> Array:
 	return __data
 
-## Returns the database as a Dictionary, where entry_name is used for key. Fails if entry_name is empty and skips unnamed entries.
-func get_dictionary() -> Dictionary:
+## Returns the database as a Dictionary, where entry_name is used for key. Fails if entry_name is empty. Use skip_unnamed to automatically skip unnamed entries.
+func get_dictionary(skip_unnamed := false) -> Dictionary:
 	if entry_name.empty():
 		push_error("Can't create Dictionary if data is unnamed.")
 		return {}
@@ -54,7 +54,7 @@ func get_dictionary() -> Dictionary:
 		__dict.clear()
 		for entry in __data:
 			if not entry_name in entry:
-				assert(false, "Entry has no name, can't create Dictionary key.")
+				assert(not skip_unnamed, "Entry has no name, can't create Dictionary key.")
 				continue
 			__dict[entry[entry_name]] = entry
 		__data_dirty = false
@@ -71,14 +71,15 @@ static func load(storage_script: String, path: String) -> TextDatabase:
 		dir.list_dir_begin(true)
 		var file := dir.get_next()
 		while file:
-			storage.load_from_path("%s/%s" % [dir.get_current_dir(), file])
+			if not dir.current_is_dir():
+				storage.load_from_path("%s/%s" % [dir.get_current_dir(), file])
 			file = dir.get_next()
 	else:
 		storage.load_from_path(path)
 	
 	return storage
 
-## Loads data from the given file. Can be called multiple times and the new data will be appended to the database with incrementing IDs.
+## Loads data from the given file. Can be called multiple times on different files and the new data will be appended to the database with incrementing IDs.
 func load_from_path(path: String):
 	if not __properties_validated:
 		__assert_validity()
@@ -115,13 +116,13 @@ func load_from_path(path: String):
 	
 	for entry in data:
 		_preprocess_entry(entry)
-
+		
 		if not entry_name.empty() and not entry_name in entry:
 			push_warning("Entry has no name key (%s): %s" % [entry_name, entry])
 		
 		for property in mandatory_properties:
 			var property_name: String
-
+			
 			if property is Array:
 				property_name = property[0]
 			else:
@@ -148,7 +149,7 @@ func load_from_path(path: String):
 							assert(typeof(entry[property]) == prop[1], "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
 							valid = true
 							break
-
+				
 				valid = valid or _custom_validate(entry, property)
 				assert(valid, "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
 		
@@ -180,8 +181,25 @@ func __assert_validity():
 	for property in valid_properties:
 		__validate_property(property)
 	
-	if valid_properties.empty():
+	if not valid_properties.empty():
 		is_validated = true
+	
+	for property in default_properties:
+		assert(property is String, "Default property key '%s' is not a String." % property)
+		var value = default_properties[property]
+		
+		var valid: bool
+		for property2 in mandatory_properties:
+			if property2 is Array and property2[0] == property:
+				valid = true
+				assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+		
+		for property2 in valid_properties:
+			if property2 is Array and property2[0] == property:
+				valid = true
+				assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+		
+		assert(not is_validated or valid, "Default property '%s' is not recognized.")
 
 func __validate_property(property):
 	if property is String:
