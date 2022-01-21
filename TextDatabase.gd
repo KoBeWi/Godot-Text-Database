@@ -61,26 +61,37 @@ func get_dictionary(skip_unnamed := false) -> Dictionary:
 	
 	return __dict
 
-## Creates a TextDatabase from the given script and loads file under provided path. If the path is a directory, all files from that directory will be loaded, in alphabetical order.
+## Number of entries.
+func size() -> int:
+	return __data.size()
+
+## Creates a TextDatabase from the given script and loads file(s) under provided path.
 static func load(storage_script: String, path: String) -> TextDatabase:
 	var storage := load(storage_script).new() as TextDatabase
 	assert(storage, "Invalid custom script: %s" % storage_script)
-	
+	storage.load_from_path(path)
+	return storage
+
+## Loads data from the given path. Can be called multiple times on different files and the new data will be appended to the database with incrementing IDs.
+## If the path is a directory, all files from that directory will be loaded, in alphabetical order.
+func load_from_path(path: String):
 	var dir := Directory.new()
 	if dir.open(path) == OK:
+		var file_list: Array
+		
 		dir.list_dir_begin(true)
 		var file := dir.get_next()
 		while file:
 			if not dir.current_is_dir():
-				storage.load_from_path("%s/%s" % [dir.get_current_dir(), file])
+				file_list.append("%s/%s" % [dir.get_current_dir(), file])
 			file = dir.get_next()
-	else:
-		storage.load_from_path(path)
+		
+		file_list.sort()
+		for file_path in file_list:
+			load_from_path(file_path)
+		
+		return
 	
-	return storage
-
-## Loads data from the given file. Can be called multiple times on different files and the new data will be appended to the database with incrementing IDs.
-func load_from_path(path: String):
 	if not __properties_validated:
 		__assert_validity()
 		__properties_validated = true
@@ -105,9 +116,7 @@ func load_from_path(path: String):
 		"cfg":
 			var file := ConfigFile.new()
 			var error := file.load(path)
-			if error != OK:
-				push_error("Parse failed, invalid ConfigFile. Error code: %s" % error)
-				return
+			assert(error == OK, "Parse failed, invalid ConfigFile. Error code: %s" % error)
 			
 			data = __config_file_to_array(file)
 		_:
@@ -130,7 +139,7 @@ func load_from_path(path: String):
 			
 			if property_name in entry:
 				if is_typed and property is Array:
-					assert(typeof(entry[property_name]) == property[1], "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+					assert(typeof(entry[property_name]) == property[1], "Invalid type of property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
 			else:
 				assert(false, "Missing mandatory property '%s' in entry '%s'." % [property, entry.get(entry_name)])
 		
@@ -175,6 +184,7 @@ func _init():
 
 func __assert_validity():
 	assert(!id_name.empty(), "'id_name' can't be empty String.")
+	
 	for property in mandatory_properties:
 		__validate_property(property)
 	
@@ -190,25 +200,31 @@ func __assert_validity():
 		
 		var valid: bool
 		for property2 in mandatory_properties:
-			if property2 is Array and property2[0] == property:
-				valid = true
-				assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+			if property2 is Array:
+				if property2[0] == property:
+					valid = true
+					assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+			else:
+				valid = valid or property == property2
 		
 		for property2 in valid_properties:
-			if property2 is Array and property2[0] == property:
-				valid = true
-				assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+			if property2 is Array:
+				if property2[0] == property:
+					valid = true
+					assert(not is_typed or typeof(value) == property2[1], "Default property '%s' has wrong type." % property)
+			else:
+				valid = valid or property == property2
 		
-		assert(not is_validated or valid, "Default property '%s' is not recognized.")
+		assert(not is_validated or valid, "Default property '%s' is not recognized." % property)
 
 func __validate_property(property):
 	if property is String:
 		pass
 	elif property is Array:
 		is_typed = true
-		assert(property.size() >= 2, "Invalid typed property: '%s'. Typed property must be an array of size 2." % property)
-		assert(property[0] is String, "Invalid typed property: '%s'. First array element must by name." % property)
-		assert(property[1] is int and property[1] >= 0 and property[1] < TYPE_MAX, "Invalid typed mandatory property: '%s'. Second array element must be valid TYPE_* enum value." % property)
+		assert(property.size() >= 2, "Invalid typed property: '%s'. Typed property must be an array of size 2." % property[0])
+		assert(property[0] is String, "Invalid typed property: '%s'. First array element must by name." % property[0])
+		assert(property[1] is int and property[1] >= 0 and property[1] < TYPE_MAX, "Invalid typed mandatory property: '%s'. Second array element must be valid TYPE_* enum value." % property[0])
 	else:
 		assert(false, "Invalid property: '%s'. Property must be String or Array [name, type]." % property)
 

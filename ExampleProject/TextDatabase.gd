@@ -61,26 +61,37 @@ func get_dictionary(skip_unnamed := false) -> Dictionary:
 	
 	return __dict
 
-## Creates a TextDatabase from the given script and loads file under provided path. If the path is a directory, all files from that directory will be loaded, in alphabetical order.
+## Number of entries.
+func size() -> int:
+	return __data.size()
+
+## Creates a TextDatabase from the given script and loads file(s) under provided path.
 static func load(storage_script: String, path: String) -> TextDatabase:
 	var storage := load(storage_script).new() as TextDatabase
 	assert(storage, "Invalid custom script: %s" % storage_script)
-	
+	storage.load_from_path(path)
+	return storage
+
+## Loads data from the given path. Can be called multiple times on different files and the new data will be appended to the database with incrementing IDs.
+## If the path is a directory, all files from that directory will be loaded, in alphabetical order.
+func load_from_path(path: String):
 	var dir := Directory.new()
 	if dir.open(path) == OK:
+		var file_list: Array
+		
 		dir.list_dir_begin(true)
 		var file := dir.get_next()
 		while file:
 			if not dir.current_is_dir():
-				storage.load_from_path("%s/%s" % [dir.get_current_dir(), file])
+				file_list.append("%s/%s" % [dir.get_current_dir(), file])
 			file = dir.get_next()
-	else:
-		storage.load_from_path(path)
+		
+		file_list.sort()
+		for file_path in file_list:
+			load_from_path(file_path)
+		
+		return
 	
-	return storage
-
-## Loads data from the given file. Can be called multiple times on different files and the new data will be appended to the database with incrementing IDs.
-func load_from_path(path: String):
 	if not __properties_validated:
 		__assert_validity()
 		__properties_validated = true
