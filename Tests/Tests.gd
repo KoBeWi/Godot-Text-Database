@@ -8,3 +8,35 @@ func _ready() -> void:
 	
 	for i in expected.size():
 		assert(data_array[i].name == expected[i])
+	
+	database = TextDatabase.new()
+	database.entry_name = "test"
+	database.load_from_path("res://SingleEntry.cfg")
+	var loaded_dict: Dictionary = database.get_array()[0]
+	var target_dict := {id = 0, test = "Entry", single = true}
+	
+	assert(loaded_dict.hash() == target_dict.hash())
+	
+	database = TextDatabase.new()
+	database.id_name = "test"
+	database.load_from_path("res://SingleEntry.cfg")
+	loaded_dict = database.get_array()[0]
+	target_dict = {test = 0, name = "Entry", single = true}
+	
+	assert(loaded_dict.hash() == target_dict.hash())
+	
+	database = TextDatabase.new()
+	database.mandatory_properties = ["mandatory"]
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+	database.mandatory_properties = [["mandatory", TYPE_INT]]
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+	database.valid_properties = ["mandatory"]
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+	database.valid_properties = [["mandatory", TYPE_INT]]
+	database.load_from_path("res://SingleEntry2.cfg")
