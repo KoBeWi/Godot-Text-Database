@@ -119,7 +119,8 @@ func load_from_path(path: String):
 	match path.get_extension():
 		"json":
 			var file := File.new()
-			file.open(path, file.READ)
+			var error := file.open(path, file.READ)
+			assert(error == OK, "Opening file failed with code %s." % error)
 			var json = parse_json(file.get_as_text())
 			file.close()
 
