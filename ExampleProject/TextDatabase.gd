@@ -1,11 +1,11 @@
 extends Reference
 class_name TextDatabase
 
-## Name property for an entry, i.e. you can find entry name under this property. Used as key when converting to Dictionary.
-var entry_name = "name"
-
 ## ID property for the entry. Each entry has an unique ID, starting from 0.
 var id_name = "id"
+
+## Name property for an entry, i.e. you can find entry name under this property. Used as key when converting to Dictionary.
+var entry_name = "name"
 
 ## Any entry must have every property from this array.
 ## A property might be a String or an Array [name, type]. If the latter is used, the type of property in entry will be checked. See also is_typed.
@@ -23,6 +23,24 @@ var is_typed: bool
 
 ## If true, properties in the entry will be checked against 'mandatory' and 'valid' lists and raise an error if the property is not recognized. Automatically set to true if valid_properties list is not empty.
 var is_validated: bool
+
+## Helper for adding mandatory properties.
+func add_mandatory_property(property: String, type: int = TYPE_MAX):
+	if type == TYPE_MAX:
+		mandatory_properties.append(property)
+	else:
+		mandatory_properties.append([property, type])
+
+## Helper for adding valid properties.
+func add_valid_property(property: String, type: int = TYPE_MAX):
+	if type == TYPE_MAX:
+		valid_properties.append(property)
+	else:
+		valid_properties.append([property, type])
+
+## Helper for adding default properties.
+func add_default_property(property: String, value):
+	default_properties[property] = value
 
 ## Virtual. Called right after creation. Can be used to setup lists etc.
 func _initialize() -> void:
@@ -231,10 +249,9 @@ func __validate_property(property):
 func __config_file_to_array(data: ConfigFile) -> Array:
 	var array: Array
 	for section in data.get_sections():
-		var entry := {}
+		var entry := {id_name: __last_id}
 		if not entry_name.empty():
 			entry[entry_name] = section
-		entry[id_name] = __last_id
 		__last_id += 1
 		
 		for value in data.get_section_keys(section):

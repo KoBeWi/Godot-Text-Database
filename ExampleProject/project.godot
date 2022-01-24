@@ -21,6 +21,7 @@ _global_script_class_icons={
 [application]
 
 config/name="Text Database Example"
+run/main_scene="res://Example.tscn"
 
 [debug]
 

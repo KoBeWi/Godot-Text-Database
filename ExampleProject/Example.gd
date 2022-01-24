@@ -3,8 +3,9 @@ extends Node2D
 func _ready() -> void:
 	var icons := TextDatabase.new()
 	# Quick-setup the database.
-	icons.mandatory_properties = ["color"]
-	icons.default_properties = {"scale": Vector2(1, 1), "scalef": 1.0}
+	icons.add_mandatory_property("color")
+	icons.add_default_property("scale", Vector2.ONE)
+	icons.add_default_property("scalef", 1.0)
 	# Load icon data from 2 files.
 	icons.load_from_path("Icons.cfg")
 	icons.load_from_path("Icons.json")

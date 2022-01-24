@@ -3,8 +3,9 @@ extends TextDatabase
 enum Elements {FIRE, ICE, THUNDER}
 
 func _initialize():
-	mandatory_properties = [["icon", TYPE_STRING]]
-	valid_properties = [["element", TYPE_STRING], ["attack", TYPE_INT]]
+	add_mandatory_property("icon", TYPE_STRING)
+	add_valid_property("element", TYPE_STRING)
+	add_valid_property("attack", TYPE_INT)
 
 func _postprocess_entry(entry: Dictionary):
 	entry.element = Elements.keys().find(entry.element)
