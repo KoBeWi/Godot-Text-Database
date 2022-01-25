@@ -60,3 +60,6 @@ func _ready() -> void:
 	target_dict = {name = "Entry", type = "Test", value = 1.0, id = 0}
 	
 	assert(loaded_dict.hash() == target_dict.hash())
+	
+	database = TextDatabase.load("res://CustomDatabase.gd", "res://SingleEntry.cfg")
+	assert(database.get_array().front().single__ == true)
