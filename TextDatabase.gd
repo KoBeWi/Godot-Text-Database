@@ -119,11 +119,12 @@ func load_from_path(path: String):
 	match path.get_extension():
 		"json":
 			var file := File.new()
-			file.open(path, file.READ)
+			var error := file.open(path, file.READ)
+			assert(error == OK, "Opening file failed with code %s." % error)
 			var json = parse_json(file.get_as_text())
 			file.close()
 
-			assert(json, "Parse failed, invalid JSON file: %s" % path)
+			assert(json, "Parse failed, invalid JSON file: %s." % path)
 			assert(json is Array, "Invalid data type. Only JSON arrays are supported.")
 			data = json
 
@@ -134,7 +135,7 @@ func load_from_path(path: String):
 		"cfg":
 			var file := ConfigFile.new()
 			var error := file.load(path)
-			assert(error == OK, "Parse failed, invalid ConfigFile. Error code: %s" % error)
+			assert(error == OK, "Parse failed, invalid ConfigFile. Error code: %s." % error)
 			
 			data = __config_file_to_array(file)
 		_:
@@ -145,7 +146,7 @@ func load_from_path(path: String):
 		_preprocess_entry(entry)
 		
 		if not entry_name.empty() and not entry_name in entry:
-			push_warning("Entry has no name key (%s): %s" % [entry_name, entry])
+			push_warning("Entry has no name key (%s): %s." % [entry_name, entry])
 		
 		for property in mandatory_properties:
 			var property_name: String
