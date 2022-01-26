@@ -115,9 +115,11 @@ database.load_from_file("res://Equipment.cfg")
 
 You can define 2 types of properties in TextDatabase: "mandatory" properties and "valid" properties. Mandatory property is a property that MUST be in an entry. E.g. if you have you have a collection of items, you might want all of them to have description. Valid properties are properties that CAN be in entry. E.g. your items might have a set of stats, like "attack" and "defense". If you make a typo "attac", the property won't be recognized as valid.
 
-The data is validated during loading. If any entry is missing mandatory property or a property is invalid, it will hit an assertion and pause your game (works only in editor). So if you make a typo or forget to add something or put a wrong type etc., you will be spammed with errors, so you won't miss them unknowingly. This makes it very safe and convenient to use. Do note that property validation isn't done only against "valid" properties, but TextDatabase will also consider "mandatory" properties as well, so you don't need to duplicate them. If you want to validate properties, but don't have any "valid" properties, you can set `is_validated` to true, to enable validation using only the mandatory set. Also properties can be typed, so that the type loaded from file is checked against the declared one. With all this combined, your database definition is really close to a schema of traditional database.
+The data is validated during loading. If any entry is missing mandatory property or a property is invalid, it will hit an assertion and pause your game (works only in editor). So if you make a typo or forget to add something or put a wrong type etc., you will be spammed with errors, so you won't miss them unknowingly. This makes it very safe and convenient to use. Do note that property validation isn't done only against "valid" properties, but TextDatabase will also consider "mandatory" properties as well, so you don't need to duplicate them. If you want to validate properties, but don't have any "valid" properties, you can set `is_validated` to true, to enable validation using only the mandatory set. Also properties can be typed, so that the type loaded from file is checked against the declared one. There also an option called `is_strict` (default `false`), which makes validation fail if property declared as `float` has `int` value.
 
-TextDatabase also supports "default" properties. If an entry doesn't have a property defined, it can have a default value for that property. This is mostly for convenience, as Dictionary has a `get()` method anyways. If your database is validated, default properties must exist in the "valid" list.
+TextDatabase also supports default values for properties. If database is validated, a default value must correspond to a valid property. There's a helper method to add a valid property with default.
+
+With all this combined, your database definition is really close to a schema of traditional database. Note that all validation happens only in debug builds.
 
 Examples:
 
@@ -147,8 +149,10 @@ Defining other properties:
 var database = TextDatabase.new()
 database.valid_properties = ["attack", "element", ["weight", TYPE_REAL]] # way 1, the last property is with type
 database.add_valid_property("defense") # way 2
-database.default_properties = {"element": "neutral"} # way 1
-database.add_default_property("defense", 0) # way 2
+database.default_values = {"element": "neutral"} # way 1
+database.add_default_value("defense", 0) # way 2
+database.add_valid_property_with_default("power", 0) # add valid property with default value
+database.add_valid_property_with_default("resistance", 0, false) # same, but the property will be untyped
 database.load_from_path("res://Items1.cfg")
 ```
 
@@ -176,9 +180,20 @@ func _preprocess_entry(entry):
 		entry.color = [Color.red, Color.green, Color.blue][entry.id % 3]
 ```
 
-The `_custom_validate()` callback is called for invalid entries. You can apply custom validation and return `true` or `false`.
+The `_additional_validate()` callback is called after the regular validation. You can apply some rules that aren't possible automatically and return `true` or `false`. Doesn't get called in release builds.
 ```GDScript
-func _custom_validate(entry, property):
+enum Shapes {RECTANGLE, CIRCLE, OCTACHORON}
+
+func _additional_validate(entry, property):
+	# This makes sure that a property value exists in enum.
+	if property == "shape":
+		return entry[property] in Shapes.keys()
+	return true
+```
+
+The `_reserve_validate()` callback is called for invalid entries if all other validation fails. You can apply custom validation and return `true` or `false`. Doesn't get called in release builds.
+```GDScript
+func _reserve_validate(entry, property):
 	# This allows for properties like "power_lv1" to pass validation.
 	if property.find("_lv") > -1:
 		return is_property_valid(entry, property.get_slice("_", 0), entry[property])
@@ -188,7 +203,7 @@ func _custom_validate(entry, property):
 
 The `_postprocess_entry() callback is called for every entry in your database after the validation is finished.
 ```GDScript
-enum Shapes{RECTANGLE, CIRCLE, OCTACHORON}
+enum Shapes {RECTANGLE, CIRCLE, OCTACHORON}
 
 func _postprocess_entry(entry):
 	# Assign actual enum value to a property.
@@ -209,3 +224,5 @@ Or a shorter version:
 ```GDScript
 var data = TextDatabase.load("res://ItemsDatabase.gd", "res://ShapeItems.json").get_array()
 ```
+
+You can check the example project if you are still unsure.

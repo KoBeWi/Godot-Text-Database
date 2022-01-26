@@ -43,7 +43,7 @@ func _ready() -> void:
 	
 	database = TextDatabase.new()
 #	database.valid_properties = ["mandatory"]
-	database.default_properties = {default = 1, mandatory = 0}
+	database.default_values = {default = 1, mandatory = 0}
 	database.load_from_path("res://SingleEntry2.cfg")
 	
 	assert(database.get_array().front().default == 1)
@@ -51,7 +51,20 @@ func _ready() -> void:
 	
 	database = TextDatabase.new()
 	database.add_valid_property("mandatory", TYPE_INT)
-#	database.add_default_property("mandatory", 1.0)
+#	database.add_default_value("mandatory", 1.0)
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+	database.add_valid_property_with_default("mandatory", 15)
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+	database.add_valid_property_with_default("mandatory", "test", false)
+	database.load_from_path("res://SingleEntry2.cfg")
+	
+	database = TextDatabase.new()
+#	database.is_strict = true
+	database.add_mandatory_property("mandatory", TYPE_REAL)
 	database.load_from_path("res://SingleEntry2.cfg")
 	
 	database = TextDatabase.new()
