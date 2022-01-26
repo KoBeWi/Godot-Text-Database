@@ -14,8 +14,9 @@ Then comes the mother of all data storage, that is, storing data in a format int
 
 Most people, when thinking about data storage, they use JSON. Of course there are other formats, but this is the only one that Godot supports. But there's another - ConfigFile. It's a Godot's custom text format inspired by INI files. Your `export.cfg` is stored in this format, also `.tscn` and `.tres` files have very similar structure. Why is better than JSON?
 - It has proper integer support, so e.g. you don't get unexpected results when using loaded data in a `match` statement.
-- Actually, it supports any Godot's native Variant type. You can store e.g. Vector2s in your ConfigFiles
+- Actually, it supports any Godot's native Variant type. You can store e.g. Vector2s in your ConfigFiles.
 - It supports comments. You can conveniently comment-out parts of data or annotate it.
+- It also supports trailing commas.
 - The syntax is way better. Just compare this JSON:
 ```JSON
 [
