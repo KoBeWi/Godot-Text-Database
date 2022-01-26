@@ -9,7 +9,7 @@ func _preprocess_entry(entry: Dictionary):
 	entry.erase("single")
 
 func _custom_validate(entry: Dictionary, property: String) -> bool:
-	return property.ends_with("_")
+	return property.ends_with("_") and is_property_valid(entry, property.trim_suffix("_"), entry[property])
 
 func _postprocess_entry(entry: Dictionary):
 	entry.single__ = entry.single_

@@ -83,6 +83,27 @@ func get_dictionary(skip_unnamed := false) -> Dictionary:
 func size() -> int:
 	return __data.size()
 
+## Returns whether the property is valid.
+func is_property_valid(entry: Dictionary, property: String, value = null) -> bool:
+	if value == null:
+		value = entry[property]
+	
+	var valid: bool = property == entry_name or property == id_name or property in mandatory_properties or property in valid_properties or property in default_properties
+	if not valid and is_typed:
+		for prop in mandatory_properties:
+			if prop[0] == property:
+				valid = true
+				break
+	
+	if not valid and is_typed:
+		for prop in valid_properties:
+			if prop[0] == property:
+				assert(typeof(value) == prop[1], "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+				valid = true
+				break
+	
+	return valid or _custom_validate(entry, property)
+
 ## Creates a TextDatabase from the given script and loads file(s) under provided path.
 static func load(storage_script: String, path: String) -> TextDatabase:
 	var storage := load(storage_script).new() as TextDatabase
@@ -163,22 +184,7 @@ func load_from_path(path: String):
 		
 		if is_validated:
 			for property in entry:
-				var valid: bool = property == entry_name or property == id_name or property in mandatory_properties or property in valid_properties or property in default_properties
-				if not valid and is_typed:
-					for prop in mandatory_properties:
-						if prop[0] == property:
-							valid = true
-							break
-				
-				if not valid and is_typed:
-					for prop in valid_properties:
-						if prop[0] == property:
-							assert(typeof(entry[property]) == prop[1], "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
-							valid = true
-							break
-				
-				valid = valid or _custom_validate(entry, property)
-				assert(valid, "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
+				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
 		
 		for property in default_properties:
 			if not property in entry:

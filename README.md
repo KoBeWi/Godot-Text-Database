@@ -19,19 +19,19 @@ Most people, when thinking about data storage, they use JSON. Of course there ar
 - The syntax is way better. Just compare this JSON:
 ```JSON
 [
-    {
-        "name": "Bag of Spikes",
-        "description": "A bag full of rusty spikes.",
-        "price": 80,
-        "type": "misc"
-    },
+	{
+		"name": "Bag of Spikes",
+		"description": "A bag full of rusty spikes.",
+		"price": 80,
+		"type": "misc"
+	},
 
-    {
-        "name": "Hammer",
-        "description": "A hammer. For hitting screws and things.",
-        "price": 75,
-        "type": "misc"
-    }
+	{
+		"name": "Hammer",
+		"description": "A hammer. For hitting screws and things.",
+		"price": 75,
+		"type": "misc"
+	}
 ]
 ```
 With this super-slick CFG:
@@ -66,7 +66,7 @@ database.load_from_path("res://Items.cfg")
 var data = database.get_dictionary()
 
 for item in data:
-  print(item.description) # Prints "A bag full of rusty spikes." and "A hammer. For hitting screws and things.".
+	print(item.description) # Prints "A bag full of rusty spikes." and "A hammer. For hitting screws and things.".
 ```
 
 You can also load multiple files into a database:
@@ -160,28 +160,28 @@ You can create a custom script that extends TextDatabase. The main advantage is 
 The `_initialize()` callback is called when the database instance is created. Here you can customize it.
 ```GDScript
 func _initialize():
-  entry_name = "item"
-  add_mandatory_property("price", TYPE_INT)
-  add_mandatory_property("color", TYPE_COLOR)
-  add_valid_property("shape", TYPE_STRING)
-  add_valid_property("power", TYPE_INT)
+	entry_name = "item"
+	add_mandatory_property("price", TYPE_INT)
+	add_mandatory_property("color", TYPE_COLOR)
+	add_valid_property("shape", TYPE_STRING)
+	add_valid_property("power", TYPE_INT)
 ```
 
 The `_preprocess_entry()` callback is called for every entry in your database after it is loaded, but before validation.
 ```GDScript
 func _preprocess_entry(entry):
-  # If an entry doesn't have this mandatory property, add a dynamic default value.
+	# If an entry doesn't have this mandatory property, add a dynamic default value.
 	if not entry.has("color"):
-    entry.color = [Color.red, Color.green, Color.blue][entry.id % 3]
+		entry.color = [Color.red, Color.green, Color.blue][entry.id % 3]
 ```
 
 The `_custom_validate()` callback is called for invalid entries. You can apply custom validation and return `true` or `false`.
 ```GDScript
 func _custom_validate(entry, property):
-  # This allows for properties like "power_lv1" to pass validation.
+	# This allows for properties like "power_lv1" to pass validation.
 	if property.find("_lv") > -1:
-    return property.get_slice("_", 0) in valid_properties
-  return false
+		return is_property_valid(entry, property.get_slice("_", 0), entry[property])
+	return false
 ```
 
 The `_postprocess_entry() callback is called for every entry in your database after the validation is finished.
@@ -189,11 +189,12 @@ The `_postprocess_entry() callback is called for every entry in your database af
 enum Shapes{RECTANGLE, CIRCLE, OCTACHORON}
 
 func _postprocess_entry(entry):
-  # Assign actual enum value to a property.
-  if "shape" in entry:
-    for i in Shapes.keys().size():
-      if Shapes.keys()[i] == entry.shape:
-        entry.shape = i
+	# Assign actual enum value to a property.
+	if "shape" in entry:
+		for i in Shapes.keys().size():
+			if Shapes.keys()[i] == entry.shape:
+				entry.shape = i
+				break
 ```
 
 To load a data file with custom class, you can do either:
