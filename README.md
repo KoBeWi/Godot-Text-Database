@@ -183,6 +183,7 @@ func _custom_validate(entry, property):
 		return is_property_valid(entry, property.get_slice("_", 0), entry[property])
 	return false
 ```
+(note the `is_property_valid()` method in above example. It's useful for manual validation)
 
 The `_postprocess_entry() callback is called for every entry in your database after the validation is finished.
 ```GDScript
