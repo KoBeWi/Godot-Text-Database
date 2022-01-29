@@ -108,7 +108,7 @@ database.entry_name = "type"
 database.load_from_file("res://Equipment.cfg")
 ```
 ```GDScript
-[{"item": 0, "type": "Rusty Sword", "attack": 5}, {"iitem": 1, "type": "Rubber Sword", "attack": 1}]
+[{"item": 0, "type": "Rusty Sword", "attack": 5}, {"item": 1, "type": "Rubber Sword", "attack": 1}]
 ```
 
 ## Data validation
