@@ -156,7 +156,7 @@ database.add_valid_property_with_default("resistance", 0, false) # same, but the
 database.load_from_path("res://Items1.cfg")
 ```
 
-## Custom databse classes
+## Custom database classes
 
 Sometimes you need more data processing in your database. Common example is when you have a property that stores enum. But you can't load enums from text files (even with ConfigFile :< ), so instead you can store enum name as string and then convert it to proper value upon loading. This, or maybe your "schema" is sooooo long that you want to store it somewhere else. Or maybe you just think that declaring stuff ad-hoc is ugly. That's where custom database classes come in.
 
@@ -201,7 +201,7 @@ func _reserve_validate(entry, property):
 ```
 (note the `is_property_valid()` method in above example. It's useful for manual validation)
 
-The `_postprocess_entry() callback is called for every entry in your database after the validation is finished.
+The `_postprocess_entry()` callback is called for every entry in your database after the validation is finished.
 ```GDScript
 enum Shapes {RECTANGLE, CIRCLE, OCTACHORON}
 
