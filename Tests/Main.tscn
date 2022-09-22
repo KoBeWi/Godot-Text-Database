@@ -1,16 +1,9 @@
-[gd_scene load_steps=2 format=2]
+[gd_scene load_steps=2 format=3 uid="uid://dsoqf3iet4c24"]
 
-[ext_resource path="res://Tests.gd" type="Script" id=1]
+[ext_resource type="Script" path="res://Tests.gd" id="1"]
 
 [node name="Node" type="Node"]
-script = ExtResource( 1 )
+script = ExtResource("1")
 
 [node name="Label" type="Label" parent="."]
-margin_left = 389.0
-margin_top = 170.0
-margin_right = 429.0
-margin_bottom = 184.0
 text = "If everything is alright, this scene will run without problems. You can manually break things to test validation lol"
-__meta__ = {
-"_edit_use_anchors_": false
-}

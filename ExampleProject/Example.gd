@@ -12,7 +12,7 @@ func _ready() -> void:
 	
 	# Create icons, reading their color and scale from the database.
 	for entry in icons.get_array():
-		var icon := Sprite.new()
+		var icon := Sprite2D.new()
 		icon.name = entry.name
 		icon.texture = preload("res://icon.png")
 		icon.position = Vector2(64, 64 + get_child_count() * 72)
@@ -25,13 +25,13 @@ func _ready() -> void:
 	
 	# Create weapons, using proper icons and element colors.
 	for entry in weapons.get_array():
-		var icon := Sprite.new()
+		var icon := Sprite2D.new()
 		icon.texture = entry.icon
 		icon.position = Vector2(192, 64 + (get_child_count() - icons.size()) * 72)
 		add_child(icon)
 		
 		var label := Label.new()
 		label.text = entry.name
-		label.rect_position = Vector2(40, 0)
-		label.modulate = [Color.red, Color.aqua, Color.violet][entry.element]
+		label.position = Vector2(40, 0)
+		label.modulate = [Color.RED, Color.AQUA, Color.VIOLET][entry.element]
 		icon.add_child(label)

@@ -6,14 +6,14 @@
 ;   [section] ; section goes between []
 ;   param=value ; assign values to parameters
 
-config_version=4
+config_version=5
 
-_global_script_classes=[ {
-"base": "Reference",
-"class": "TextDatabase",
-"language": "GDScript",
+_global_script_classes=[{
+"base": "RefCounted",
+"class": &"TextDatabase",
+"language": &"GDScript",
 "path": "res://TextDatabase.gd"
-} ]
+}]
 _global_script_class_icons={
 "TextDatabase": ""
 }
@@ -22,11 +22,8 @@ _global_script_class_icons={
 
 config/name="Text Database Example"
 run/main_scene="res://Example.tscn"
+config/features=PackedStringArray("4.0")
 
 [debug]
 
 gdscript/warnings/enable=false
-
-[display]
-
-window/dpi/allow_hidpi=true
