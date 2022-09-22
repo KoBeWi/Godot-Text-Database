@@ -24,12 +24,12 @@ var is_validated: bool
 
 ## Adds a mandatory property with optionally provided type.
 func add_mandatory_property(property: String, type: int = TYPE_MAX):
-	assert(not __property_exists(property) )#, "Property '%s' already exists." % property)
+	assert(not __property_exists(property), "Property '%s' already exists." % property)
 	__mandatory_properties.append([property, type])
 
 ## Adds a valid property with optionally provided type.
 func add_valid_property(property: String, type: int = TYPE_MAX):
-	assert(not __property_exists(property) )#, "Property '%s' already exists." % property)
+	assert(not __property_exists(property), "Property '%s' already exists." % property)
 	__valid_properties.append([property, type])
 
 ## Adds a valid property with a default value. Enforces type, unless [param typed] is false.
@@ -94,27 +94,27 @@ func is_property_valid(entry: Dictionary, property: String, value = null) -> boo
 	if not valid:
 		for prop in __mandatory_properties:
 			if prop[0] == property:
-				assert(not is_typed or __match_type(typeof(value), prop[1]) )#, "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+				assert(not is_typed or __match_type(typeof(value), prop[1]), "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
 				valid = true
 				break
 	
 	if not valid:
 		for prop in __valid_properties:
 			if prop[0] == property:
-				assert(not is_typed or __match_type(typeof(value), prop[1]) )#, "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+				assert(not is_typed or __match_type(typeof(value), prop[1]), "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
 				valid = true
 				break
 	
 	if valid:
 		var error := _additional_validate(entry, property)
-		assert(error.is_empty() )#, error)
+		assert(error.is_empty(), error)
 	
 	return valid or _reserve_validate(entry, property)
 
 ## Creates a TextDatabase from the given script and loads file(s) under provided path.
 static func load(storage_script: String, path: String) -> TextDatabase:
 	var storage := load(storage_script).new() as TextDatabase
-	assert(storage )#, "Invalid custom script: %s" % storage_script)
+	assert(storage, "Invalid custom script: %s" % storage_script)
 	storage.load_from_path(path)
 	return storage
 
@@ -149,7 +149,7 @@ func load_from_path(path: String):
 			var file := FileAccess.open(path, FileAccess.READ)
 			var json = JSON.parse_string(file.get_as_text())
 			
-			assert(json )#, "Parse failed, invalid JSON file: %s" % path)
+			assert(json, "Parse failed, invalid JSON file: %s" % path)
 			assert(json is Array, "Invalid data type. Only JSON arrays are supported.")
 			data = json
 			
@@ -160,7 +160,7 @@ func load_from_path(path: String):
 		"cfg":
 			var file := ConfigFile.new()
 			var error := file.load(path)
-			assert(error == OK )#, "Parse failed, invalid ConfigFile. Error code: %s" % error)
+			assert(error == OK, "Parse failed, invalid ConfigFile. Error code: %s" % error)
 			
 			data = __config_file_to_array(file)
 		_:
@@ -178,13 +178,13 @@ func load_from_path(path: String):
 			
 			if property_name in entry:
 				if is_typed:
-					assert(__match_type(typeof(entry[property_name]), property[1]) )#, "Invalid type of property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
+					assert(__match_type(typeof(entry[property_name]), property[1]), "Invalid type of property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
 			else:
-				assert(false )#, "Missing mandatory property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+				assert(false, "Missing mandatory property '%s' in entry '%s'." % [property, entry.get(entry_name)])
 		
 		if is_validated:
 			for property in entry:
-				assert(is_property_valid(entry, property) )#, "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
+				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
 		
 		for property in __default_values:
 			if not property in entry:
