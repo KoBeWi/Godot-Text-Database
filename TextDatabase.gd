@@ -107,14 +107,14 @@ func is_property_valid(entry: Dictionary, property: String, value = null) -> boo
 	
 	if valid:
 		var error := _additional_validate(entry, property)
-		assert(error.is_empty(), error)
+		assert(error.is_empty(), "'%s' in entry '%s': %s" % [property, entry[entry_name], error])
 	
 	return valid or _reserve_validate(entry, property)
 
 ## Creates a TextDatabase from the given script and loads file(s) under provided path.
-static func load(storage_script: String, path: String) -> TextDatabase:
-	var storage := load(storage_script).new() as TextDatabase
-	assert(storage, "Invalid custom script: %s" % storage_script)
+static func load_database(database_script: String, path: String) -> TextDatabase:
+	var storage := load(database_script).new() as TextDatabase
+	assert(storage, "Invalid custom script: %s" % database_script)
 	storage.load_from_path(path)
 	return storage
 
@@ -180,11 +180,11 @@ func load_from_path(path: String):
 				if is_typed:
 					assert(__match_type(typeof(entry[property_name]), property[1]), "Invalid type of property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
 			else:
-				assert(false, "Missing mandatory property '%s' in entry '%s'." % [property, entry.get(entry_name)])
+				assert(false, "Missing mandatory property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
 		
 		if is_validated:
 			for property in entry:
-				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
+				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property[0], entry[entry_name]])
 		
 		for property in __default_values:
 			if not property in entry:

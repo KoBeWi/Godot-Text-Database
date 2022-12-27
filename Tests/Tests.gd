@@ -69,5 +69,5 @@ func _ready() -> void:
 	
 	assert(loaded_dict.hash() == target_dict.hash())
 	
-	database = TextDatabase.load("res://CustomDatabase.gd", "res://SingleEntry.cfg")
+	database = TextDatabase.load_database("res://CustomDatabase.gd", "res://SingleEntry.cfg")
 	assert(database.get_array().front().single__ == true)

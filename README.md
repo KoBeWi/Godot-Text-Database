@@ -212,7 +212,7 @@ var data = database.get_array()
 ```
 Or a shorter version:
 ```GDScript
-var data = TextDatabase.load("res://ItemsDatabase.gd", "res://ShapeItems.json").get_array()
+var data = TextDatabase.load_database("res://ItemsDatabase.gd", "res://ShapeItems.json").get_array()
 ```
 
 You can check the example project if you are still unsure. The class also includes built-in documentation.

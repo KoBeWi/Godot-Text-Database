@@ -21,7 +21,7 @@ func _ready() -> void:
 		add_child(icon)
 	
 	# Load weapons from custom database.
-	var weapons := TextDatabase.load("res://CustomDatabase.gd", "res://Weapons.cfg")
+	var weapons := TextDatabase.load_database("res://CustomDatabase.gd", "res://Weapons.cfg")
 	
 	# Create weapons, using proper icons and element colors.
 	for entry in weapons.get_array():
