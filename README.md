@@ -78,6 +78,16 @@ database.load_from_path("res://Items2.cfg")
 ```
 They will all be stored in one array/dictionary, so you can divide your data into multiple files if you don't like 5000-liners. If the path you provide is a directory instead of a file, all files in that directory will be loaded (non-recursively).
 
+## Editing CFG files in Godot
+
+By default, Godot only shows `.gd` and `.gdshader` files in the `FileSystem` tab. In order to see and edit your config files directly in Godot:
+
+- Go to `Project` > `Project Settings ...`
+- Under the `General` tab, click on `Editor` > `Script`
+- Expand the `Search in file Extensions` array, click `Add Element`, and specify a value of `cfg`
+
+You can now see and edit your `.cfg` files directly in Godot! Don't forget to export them in your export templates when you generate your final game binaries. 
+
 ## ID and name
 
 Each entry in database has a unique ID. IDs are consecutive numbers in the order the entries are loaded. If you load mutliple files, additional files will follow the ID numbering from the previous files. By default the "ID" is stored in a property called `id`, but you can change it by modifying `id_name` property of the database. Then there is name. Each entry can be optionally named with a unique name. Names are required if you want to use the database as dictionary. ConfigFiles enforces naming your entries; the section names are used as item names. Name property can also be custiomized by `entry_name` in database.
