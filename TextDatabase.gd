@@ -1,7 +1,7 @@
 extends RefCounted
 class_name TextDatabase
 
-## A class for loading and validating data.
+## A class for loading and validating data. Version 1.2.
 
 ## TextDatabase supports cfg and json files. It loads arrays of dictionaries (entries) and validates their properties. The idea is that you write stuff by hand and the TextDatabase ensures you didn't make any mistakes.
 ## There are 2 types of properties for each entry: mandatory that need to be included in every entry and valid, which are just properties allowed to be in an entry. Properties can be typed.
@@ -21,6 +21,18 @@ var is_strict: bool
 
 ## If true, properties in the entry will be checked against 'mandatory' and 'valid' lists and raise an error if the property is not recognized. Automatically set to true if any valid property was defined.
 var is_validated: bool
+
+## Alternative for using [method _preprocess_entry]. You can assign it a lambda method. Less type-safe, not recommended.
+var preprocess_entry: Callable
+
+## Alternative for using [method _additional_validate]. You can assign it a lambda method. Less type-safe, not recommended.
+var additional_validate: Callable
+
+## Alternative for using [method _reserve_validate]. You can assign it a lambda method. Less type-safe, not recommended.
+var reserve_validate: Callable
+
+## Alternative for using [method _postprocess_entry]. You can assign it a lambda method. Less type-safe, not recommended.
+var postprocess_entry: Callable
 
 ## Adds a mandatory property with optionally provided type.
 func add_mandatory_property(property: String, type: int = TYPE_MAX):
@@ -106,10 +118,20 @@ func is_property_valid(entry: Dictionary, property: String, value = null) -> boo
 				break
 	
 	if valid:
-		var error := _additional_validate(entry, property)
+		var error: String
+		if additional_validate.is_valid():
+			error = additional_validate.call(entry, property)
+		else:
+			error = _additional_validate(entry, property)
 		assert(error.is_empty(), "'%s' in entry '%s': %s" % [property, entry[entry_name], error])
 	
-	return valid or _reserve_validate(entry, property)
+	if not valid:
+		if reserve_validate.is_valid():
+			valid = reserve_validate.call(entry, property)
+		else:
+			valid = _reserve_validate(entry, property)
+
+	return valid
 
 ## Creates a TextDatabase from the given script and loads file(s) under provided path.
 static func load_database(database_script: String, path: String) -> TextDatabase:
@@ -168,7 +190,10 @@ func load_from_path(path: String):
 			return
 	
 	for entry in data:
-		_preprocess_entry(entry)
+		if preprocess_entry.is_valid():
+			preprocess_entry.call(entry)
+		else:
+			_preprocess_entry(entry)
 		
 		if not entry_name.is_empty() and not entry_name in entry:
 			push_warning("Entry has no name key (%s): %s" % [entry_name, entry])
@@ -190,7 +215,11 @@ func load_from_path(path: String):
 			if not property in entry:
 				entry[property] = __default_values[property]
 		
-		_postprocess_entry(entry)
+		
+		if postprocess_entry.is_valid():
+			postprocess_entry.call(entry)
+		else:
+			_postprocess_entry(entry)
 	
 	__data.append_array(data)
 	__data_dirty = true

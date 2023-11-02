@@ -217,6 +217,15 @@ var data = TextDatabase.load_database("res://ItemsDatabase.gd", "res://ShapeItem
 
 You can check the example project if you are still unsure. The class also includes built-in documentation.
 
+## Inline methods
+
+New in 1.2: If you don't want to use custom class for post-processing and validating entries, you can use Callables (especially lamdas):
+```GDScript
+database.preprocess_entry = func(entry):
+	if not entry.has("color"):
+		entry.color = [Color.red, Color.green, Color.blue][entry.id % 3]
+```
+
 ___
 You can find all my addons on my [profile page](https://github.com/KoBeWi).
 
