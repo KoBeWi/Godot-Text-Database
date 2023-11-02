@@ -213,7 +213,11 @@ func load_from_path(path: String):
 		
 		for property in __default_values:
 			if not property in entry:
-				entry[property] = __default_values[property]
+				var default = __default_values[property]
+				if default is Array or default is Dictionary:
+					entry[property] = default.duplicate()
+				else:
+					entry[property] = default
 		
 		
 		if postprocess_entry.is_valid():
