@@ -190,6 +190,14 @@ func load_from_path(path: String):
 			return
 	
 	for entry in data:
+		for property in __default_values:
+			if not property in entry:
+				var default = __default_values[property]
+				if default is Array or default is Dictionary:
+					entry[property] = default.duplicate()
+				else:
+					entry[property] = default
+		
 		if preprocess_entry.is_valid():
 			preprocess_entry.call(entry)
 		else:
@@ -210,15 +218,6 @@ func load_from_path(path: String):
 		if is_validated:
 			for property in entry:
 				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property[0], entry[entry_name]])
-		
-		for property in __default_values:
-			if not property in entry:
-				var default = __default_values[property]
-				if default is Array or default is Dictionary:
-					entry[property] = default.duplicate()
-				else:
-					entry[property] = default
-		
 		
 		if postprocess_entry.is_valid():
 			postprocess_entry.call(entry)

@@ -8,21 +8,11 @@
 
 config_version=5
 
-_global_script_classes=[{
-"base": "RefCounted",
-"class": &"TextDatabase",
-"language": &"GDScript",
-"path": "res://TextDatabase.gd"
-}]
-_global_script_class_icons={
-"TextDatabase": ""
-}
-
 [application]
 
 config/name="Text Database Example"
 run/main_scene="res://Example.tscn"
-config/features=PackedStringArray("4.0")
+config/features=PackedStringArray("4.2")
 
 [debug]
 
