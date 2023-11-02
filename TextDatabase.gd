@@ -85,6 +85,9 @@ func get_dictionary(skip_unnamed := false) -> Dictionary:
 			if not entry_name in entry:
 				assert(not skip_unnamed, "Entry has no name, can't create Dictionary key.")
 				continue
+			
+			assert(not entry[entry_name] in __dict, "Duplicate entry name: %s" % entry[entry_name])
+			
 			__dict[entry[entry_name]] = entry
 		__data_dirty = false
 	
