@@ -1,6 +1,6 @@
 # <img src="https://github.com/KoBeWi/Godot-Text-Database/blob/master/Media/Icon.png" width="64" height="64"> Godot Text Database
 
-TextDatabse is a class that can load custom data files (supported formats are `.json` and `.cfg`) created manually and validate them for you. If comparing to SQL database, imagine you create a scheme and then load data and the data tries to fit into the schema. Why?
+TextDatabse is a class that can load custom data files (supported formats are `.json` and `.cfg`) created manually and validate them for you. If comparing to SQL database, imagine you create a schema and then load data and the data tries to fit into the schema. Why?
 
 ## Why TextDatabase
 
@@ -53,7 +53,7 @@ With this long introduction, let's explain the actual class.
 
 ## Basic usage
 
-`TextDatabase` class inherits Reference. The simplest usage goes like this:
+`TextDatabase` class inherits RefCounted. The simplest usage goes like this:
 ```GDScript
 var database = TextDatabase.new()
 database.load_from_path("res://MyData.cfg")
