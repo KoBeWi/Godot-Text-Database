@@ -1,7 +1,7 @@
 extends RefCounted
 class_name TextDatabase
 
-## A class for loading and validating data. Version 1.2.
+## A class for loading and validating data.
 
 ## TextDatabase supports cfg and json files. It loads arrays of dictionaries (entries) and validates their properties. The idea is that you write stuff by hand and the TextDatabase ensures you didn't make any mistakes.
 ## There are 2 types of properties for each entry: mandatory that need to be included in every entry and valid, which are just properties allowed to be in an entry. Properties can be typed.
@@ -185,7 +185,7 @@ func load_from_path(path: String):
 		"cfg":
 			var file := ConfigFile.new()
 			var error := file.load(path)
-			assert(error == OK, "Parse failed, invalid ConfigFile. Error code: %s" % error)
+			assert(error == OK, "Parse failed, invalid ConfigFile \"%s\". Error code: %s" % [path, error])
 			
 			data = __config_file_to_array(file)
 		_:
@@ -220,7 +220,7 @@ func load_from_path(path: String):
 		
 		if is_validated:
 			for property in entry:
-				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property[0], entry[entry_name]])
+				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
 		
 		if postprocess_entry.is_valid():
 			postprocess_entry.call(entry)
