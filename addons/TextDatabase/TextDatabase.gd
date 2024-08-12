@@ -42,10 +42,11 @@ var postprocess_entry: Callable
 ## Calling this method is required to use [method get_struct_array] and [method get_struct_dictionary].
 func define_from_struct(constructor: Callable):
 	__struct_constructor = constructor
+	if not OS.is_debug_build():
+		return
+
 	is_typed = true
 	is_validated = true
-	
-	var unused_properties := __valid_properties.map(func(info: Array) -> String: return info[0])
 	
 	var struct: RefCounted = __struct_constructor.call()
 	for property in struct.get_property_list():
@@ -53,13 +54,35 @@ func define_from_struct(constructor: Callable):
 			continue
 		
 		var property_name: String = property["name"]
-		if __property_exists(property_name):
-			unused_properties.erase(property_name)
-			continue
-		
 		add_default_property(property_name, struct.get(property_name))
+
+## Makes an existing property mandatory. Requires [method define_from_struct] to be called first. Used to customize struct properties.
+func override_property_mandatory(property: String):
+	assert(__struct_constructor.is_valid(), "define_from_struct() needs to be called first to override properties.")
 	
-	assert(unused_properties.is_empty(), "Some defined properties not found in struct: " + str(unused_properties))
+	for p in __valid_properties:
+		if p[0] == property:
+			__mandatory_properties.append(p)
+			return
+	
+	push_error("Failed to override property %s: does not exist.", property)
+
+## Changes the validated type of a property. Requires [method define_from_struct] to be called first. Used to customize struct properties, in case when the actual type can't be stored as text. When overriding type, make sure to assign correct value using [method _postprocess_entry].
+func override_property_type(property: String, type: int):
+	assert(__struct_constructor.is_valid(), "define_from_struct() needs to be called first to override properties.")
+	
+	for p in __valid_properties:
+		if p[0] == property:
+			p[1] = type
+			__default_values.erase(property)
+			return
+	
+	push_error("Failed to override property %s: does not exist.", property)
+
+## Adds a valid property with optionally provided type.
+func add_valid_property(property: String, type: int = TYPE_MAX):
+	assert(not __property_exists(property), "Property '%s' already exists." % property)
+	__valid_properties.append([property, type])
 
 ## Adds a mandatory property with optionally provided type. The property is also added to valid properties.
 func add_mandatory_property(property: String, type: int = TYPE_MAX):
@@ -67,18 +90,18 @@ func add_mandatory_property(property: String, type: int = TYPE_MAX):
 	__mandatory_properties.append([property, type])
 	__valid_properties.append([property, type])
 
-## Adds a valid property with optionally provided type.
-func add_valid_property(property: String, type: int = TYPE_MAX):
-	assert(not __property_exists(property), "Property '%s' already exists." % property)
-	__valid_properties.append([property, type])
-
 ## Adds a valid property with a default value. Enforces type, unless [param typed] is false.
 func add_default_property(property: String, default, typed := true):
 	add_valid_property(property, typeof(default) if typed else TYPE_MAX)
 	__default_values[property] = default
 
-## Virtual. Called right after creation. Can be used to setup lists etc.
+## Virtual. Called right after creation. Can be used to setup database properties or some data required by the database (e.g. dependencies).
+## [br][br]If using structs, call [method define_from_struct] here.
 func _initialize() -> void:
+	pass
+
+## Virtual. Called right after creation and after [method _initialize], in debug builds. Use it to define properties.
+func _schema_initialize() -> void:
 	pass
 
 ## Virtual. Called for every entry before it is processed (validated, checked for mandatory entries etc.).
@@ -148,9 +171,6 @@ func size() -> int:
 
 ## Returns whether the property is valid.
 func is_property_valid(entry: Dictionary, property: String, value = null) -> bool:
-	if not OS.is_debug_build():
-		return true
-	
 	if value == null:
 		value = entry[property]
 	
@@ -260,7 +280,7 @@ func load_from_path(path: String):
 			else:
 				assert(false, "Missing mandatory property '%s' in entry '%s'." % [property_name, entry.get(entry_name)])
 		
-		if is_validated:
+		if is_validated and OS.is_debug_build():
 			for property in entry:
 				assert(is_property_valid(entry, property), "Invalid property '%s' in entry '%s'." % [property, entry[entry_name]])
 		
@@ -285,6 +305,8 @@ var __default_values: Dictionary
 
 func _init():
 	_initialize()
+	if OS.is_debug_build():
+		_schema_initialize()
 
 func __setup():
 	if not OS.is_debug_build():

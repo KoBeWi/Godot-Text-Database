@@ -117,9 +117,9 @@ You can define 2 types of properties in TextDatabase: "mandatory" properties and
 
 The data is validated during loading. If any entry is missing mandatory property or a property is invalid, it will hit an assertion and pause your game (works only in editor). So if you make a typo or forget to add something or put a wrong type etc., you will be spammed with errors, so you won't miss them unknowingly. This makes it very safe and convenient to use. Do note that property validation isn't done only against "valid" properties, but TextDatabase will also consider "mandatory" properties as well, so you don't need to duplicate them. If you want to validate properties, but don't have any "valid" properties, you can set `is_validated` to true, to enable validation using only the mandatory set. Also properties can be typed, so that the type loaded from file is checked against the declared one. There is also an option called `is_strict` (default `false`), which makes validation fail if property declared as `float` has `int` value.
 
-With all this combined, your database definition is really close to a schema of traditional database. Note that all validation happens only in debug builds.
+With all this combined, your database definition is really close to a schema of traditional database. Note that all validation happens only in debug builds. Make sure that you have no errors when loading database and avoid any data modifications in validation methods. Also, since defined properties are effectively unused in release builds, it's better to define them only in debug builds.
 
-Examples:
+### Validation examples
 
 Loading data with a set of mandatory properties.
 ```GDscript
@@ -151,10 +151,14 @@ Sometimes you need more data processing in your database. Common example is when
 
 You can create a custom script that extends TextDatabase. The main advantage is that you get access to multiple callbacks that allow you for some advanced behavior or just more encapsulated initialization.
 
-The `_initialize()` callback is called when the database instance is created. Here you can customize it.
+Database has 2 initialization callbacks:
+- `_initialize()`, which can be used to customize database (with `id_name` etc.).
+- `_schema_initialize()`, which is called only in debug builds and can be used to define properties etc.
 ```GDScript
 func _initialize():
 	entry_name = "item"
+
+func _schema_initialize():
 	add_mandatory_property("price", TYPE_INT)
 	add_mandatory_property("color", TYPE_COLOR)
 	add_valid_property("shape", TYPE_STRING)
@@ -223,9 +227,11 @@ New in 1.3: Normally database entries are Dictionaries with the defined values. 
 
 To use structs, call `define_from_struct(constructor)` method, where `constructor` is a Callable that creates your struct, e.g. `Struct.new`. Afterwards you can use `get_struct_array()` or `get_struct_dictionary()` which will return your database with the provided struct as values.
 
-`define_from_struct()` will automatically add valid properties to your database, based on properties from the provided class, and using the struct's defaults as entry defaults. It also makes the database typed and validated. If a property is already defined in the database, it will be skipped. This is useful when serialized and target types don't match (e.g. stored value is path and the struct holds a texture). If you define any properties beforehand, TextDatabase will also verify that they exist in the struct.
+`define_from_struct()` will automatically add valid properties to your database, based on properties from the provided class, and using the struct's defaults as entry defaults. It also makes the database typed and validated. If you want to make some struct properties mandatory or change their validated type, use `override_property_mandatory()` and `override_property_type()`. The latter is useful when the property can't be stored in text form, but can be processed afterwards (e.g. texture is loaded from stored path).
 
-### Example
+When using custom database script, `define_from_struct()` should be called in `_initialize()`. It will automatically skip property definition in debug builds and only assign the constructor.
+
+### Struct example
 
 A simple Item struct that has `value` property and an `icon`. It's defined like this:
 
@@ -241,8 +247,10 @@ Note the icon, which is Texture2D, so it can't be stored as text. We can use `_p
 extends TextDatabase
 
 func _initialize():
-	add_valid_property("icon", TYPE_STRING) # Type is different than in Item.
 	define_from_struct(Item.new)
+
+func _schema_initialize():
+	override_property_type("icon", TYPE_STRING) # Stored type is different than in Item.
 
 func _postprocess_entry(entry: Dictionary):
 	entry.icon = load("res://Icons/" + entry.icon + ".png") # Assign actual Texture2D.
