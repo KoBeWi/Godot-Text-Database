@@ -34,6 +34,28 @@ var reserve_validate: Callable
 ## Alternative for using [method _postprocess_entry]. You can assign it a lambda method. Less type-safe, not recommended.
 var postprocess_entry: Callable
 
+## Creates the list of valid properties based on a [RefCounted] object instance. [param constructor] should be a method that returns an instance of the target class. It can be its [code]new[/code] method:
+## [codeblock]
+## var db := TextDatabase.new()
+## db.define_from_struct(Item.new)
+## [/codeblock]
+## Calling this method is required to use [method get_struct_array] and [method get_struct_dictionary].
+func define_from_struct(constructor: Callable):
+	__struct_constructor = constructor
+	is_typed = true
+	is_validated = true
+	
+	var struct: RefCounted = __struct_constructor.call()
+	for property in struct.get_property_list():
+		if not property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
+			continue
+		
+		var property_name: String = property["name"]
+		if __property_exists(property_name):
+			continue
+		
+		add_default_property(property_name, struct.get(property_name))
+
 ## Adds a mandatory property with optionally provided type.
 func add_mandatory_property(property: String, type: int = TYPE_MAX):
 	assert(not __property_exists(property), "Property '%s' already exists." % property)
@@ -69,11 +91,11 @@ func _reserve_validate(entry: Dictionary, property: String) -> bool:
 func _postprocess_entry(entry: Dictionary) -> void:
 	pass
 
-## Returns the database as an array.
+## Returns the database as an array of Dictionary entries.
 func get_array() -> Array[Dictionary]:
 	return __data
 
-## Returns the database as a Dictionary, where entry_name is used for key. Fails if entry_name is empty. Use skip_unnamed to automatically skip unnamed entries.
+## Returns the database as a Dictionary, where [member entry_name] is used for key and the loaded entries are values. Fails if [member entry_name] is empty. Use [member skip_unnamed] to automatically skip unnamed entries.
 func get_dictionary(skip_unnamed := false) -> Dictionary:
 	if entry_name.is_empty():
 		push_error("Can't create Dictionary if data is unnamed.")
@@ -93,7 +115,28 @@ func get_dictionary(skip_unnamed := false) -> Dictionary:
 	
 	return __dict
 
-## Number of entries.
+## Same as [method get_array], but the entries are returned as the designated structs, instead of Dictionaries. [method define_from_struct] has to be called before using this method.
+func get_struct_array() -> Array[RefCounted]:
+	var ret: Array[RefCounted]
+	if __struct_constructor.is_null():
+		push_error("define_from_struct() needs to be called first to get struct Array.")
+		return ret
+	
+	ret.assign(__data.map(__make_struct))
+	return ret
+
+## Same as [method get_dictionary], but the entries (values) are returned as the designated structs, instead of Dictionaries. [method define_from_struct] has to be called before using this method.
+func get_struct_dictionary(skip_unnamed := false) -> Dictionary:
+	if __struct_constructor.is_null():
+		push_error("define_from_struct() needs to be called first to get struct Dictionary.")
+		return {}
+	
+	var ret := get_dictionary(skip_unnamed)
+	for key in ret:
+		ret[key] = __make_struct(ret[key])
+	return ret
+
+## Returns number of entries in the database.
 func size() -> int:
 	return __data.size()
 
@@ -236,6 +279,7 @@ var __dict: Dictionary
 var __last_id: int
 var __did_setup: bool
 
+var __struct_constructor: Callable
 var __mandatory_properties: Array[Array]
 var __valid_properties: Array[Array]
 var __default_values: Dictionary
@@ -259,6 +303,12 @@ func __setup():
 	
 	if not __valid_properties.is_empty():
 		is_validated = true
+
+func __make_struct(entry: Dictionary) -> RefCounted:
+	var struct: RefCounted = __struct_constructor.call()
+	for property in entry:
+		struct.set(property, entry[property])
+	return struct
 
 func __match_type(type1: int, type2: int) -> bool:
 	if type1 == TYPE_MAX or type2 == TYPE_MAX:
