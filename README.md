@@ -113,7 +113,7 @@ database.load_from_file("res://Equipment.cfg")
 
 ## Data validation
 
-You can define 2 types of properties in TextDatabase: "mandatory" properties and "valid" properties. Mandatory property is a property that MUST be in an entry. E.g. if you have you have a collection of items, you might want all of them to have description. Valid properties are properties that CAN be in entry. E.g. your items might have a set of stats, like "attack" and "defense". If you make a typo "attac", the property won't be recognized as valid. Valid properties may also have default values.
+You can define 2 types of properties in TextDatabase: "mandatory" properties and "valid" properties. Mandatory property is a property that MUST be in an entry. E.g. if you have you have a collection of items, you might want all of them to have description. Valid properties are properties that CAN be in entry. E.g. your items might have a set of stats, like "attack" and "defense". If you make a typo "attac", the property won't be recognized as valid. Valid properties may also have default values. Mandatory properties are automatically assigned as valid properties.
 
 The data is validated during loading. If any entry is missing mandatory property or a property is invalid, it will hit an assertion and pause your game (works only in editor). So if you make a typo or forget to add something or put a wrong type etc., you will be spammed with errors, so you won't miss them unknowingly. This makes it very safe and convenient to use. Do note that property validation isn't done only against "valid" properties, but TextDatabase will also consider "mandatory" properties as well, so you don't need to duplicate them. If you want to validate properties, but don't have any "valid" properties, you can set `is_validated` to true, to enable validation using only the mandatory set. Also properties can be typed, so that the type loaded from file is checked against the declared one. There is also an option called `is_strict` (default `false`), which makes validation fail if property declared as `float` has `int` value.
 
@@ -217,9 +217,51 @@ var data = TextDatabase.load_database("res://ItemsDatabase.gd", "res://ShapeItem
 
 You can check the example project if you are still unsure. The class also includes built-in documentation.
 
+## RefCounted structs
+
+New in 1.3: Normally database entries are Dictionaries with the defined values. As an alternative you can use pseudo-structs extending RefCounted. The loading will be marginally slower, but it allows for overall safer code and better performance when accessing entry properties.
+
+To use structs, call `define_from_struct(constructor)` method, where `constructor` is a Callable that creates your struct, e.g. `Struct.new`. Afterwards you can use `get_struct_array()` or `get_struct_dictionary()` which will return your database with the provided struct as values.
+
+`define_from_struct()` will automatically add valid properties to your database, based on properties from the provided class, and using the struct's defaults as entry defaults. It also makes the database typed and validated. If a property is already defined in the database, it will be skipped. This is useful when serialized and target types don't match (e.g. stored value is path and the struct holds a texture). If you define any properties beforehand, TextDatabase will also verify that they exist in the struct.
+
+### Example
+
+A simple Item struct that has `value` property and an `icon`. It's defined like this:
+
+```GDScript
+class_name Item extends RefCounted
+var value: int
+var icon: Texture2D
+```
+
+Note the icon, which is Texture2D, so it can't be stored as text. We can use `_postprocess_entry()` method to assign the texture. The database code will be this:
+
+```GDScript
+extends TextDatabase
+
+func _initialize():
+	add_valid_property("icon", TYPE_STRING) # Type is different than in Item.
+	define_from_struct(Item.new)
+
+func _postprocess_entry(entry: Dictionary):
+	entry.icon = load("res://Icons/" + entry.icon + ".png") # Assign actual Texture2D.
+```
+Note that if you omit postprocess here, you will get a type error when struct is being created.
+
+Afterwards you can safely access your items as Items:
+```GDScript
+var database := TextDatabase.load_database("res://ItemDatabase.gd", "res://Items.cfg")
+items = database.get_struct_dictionary()
+```
+```GDScript
+var item: Item = items["Rusty Sword"]
+sprite.texture = item.icon # Safe line!
+```
+
 ## Inline methods
 
-New in 1.2: If you don't want to use custom class for post-processing and validating entries, you can use Callables (especially lamdas):
+If you don't want to use custom class for post-processing and validating entries, you can use Callables (especially lamdas):
 ```GDScript
 database.preprocess_entry = func(entry):
 	if not entry.has("color"):

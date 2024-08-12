@@ -45,6 +45,8 @@ func define_from_struct(constructor: Callable):
 	is_typed = true
 	is_validated = true
 	
+	var unused_properties := __valid_properties.map(func(info: Array) -> String: return info[0])
+	
 	var struct: RefCounted = __struct_constructor.call()
 	for property in struct.get_property_list():
 		if not property["usage"] & PROPERTY_USAGE_SCRIPT_VARIABLE:
@@ -52,14 +54,18 @@ func define_from_struct(constructor: Callable):
 		
 		var property_name: String = property["name"]
 		if __property_exists(property_name):
+			unused_properties.erase(property_name)
 			continue
 		
 		add_default_property(property_name, struct.get(property_name))
+	
+	assert(unused_properties.is_empty(), "Some defined properties not found in struct: " + str(unused_properties))
 
-## Adds a mandatory property with optionally provided type.
+## Adds a mandatory property with optionally provided type. The property is also added to valid properties.
 func add_mandatory_property(property: String, type: int = TYPE_MAX):
 	assert(not __property_exists(property), "Property '%s' already exists." % property)
 	__mandatory_properties.append([property, type])
+	__valid_properties.append([property, type])
 
 ## Adds a valid property with optionally provided type.
 func add_valid_property(property: String, type: int = TYPE_MAX):
@@ -149,13 +155,6 @@ func is_property_valid(entry: Dictionary, property: String, value = null) -> boo
 		value = entry[property]
 	
 	var valid: bool = property == entry_name or property == id_name
-	if not valid:
-		for prop in __mandatory_properties:
-			if prop[0] == property:
-				assert(not is_typed or __match_type(typeof(value), prop[1]), "Invalid type of property '%s' in entry '%s'." % [property, entry.get(entry_name)])
-				valid = true
-				break
-	
 	if not valid:
 		for prop in __valid_properties:
 			if prop[0] == property:
@@ -293,10 +292,6 @@ func __setup():
 	
 	assert(not id_name.is_empty(), "'id_name' can't be empty String.")
 	
-	for property in __mandatory_properties:
-		if property[1] != TYPE_MAX:
-			is_typed = true
-	
 	for property in __valid_properties:
 		if property[1] != TYPE_MAX:
 			is_typed = true
@@ -320,10 +315,6 @@ func __match_type(type1: int, type2: int) -> bool:
 		return type1 == type2 or (type1 == TYPE_INT and type2 == TYPE_FLOAT)
 
 func __property_exists(property: String) -> bool:
-	for p in __mandatory_properties:
-		if p[0] == property:
-			return true
-
 	for p in __valid_properties:
 		if p[0] == property:
 			return true
