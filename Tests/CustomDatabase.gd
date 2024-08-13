@@ -1,8 +1,7 @@
 extends TextDatabase
 
-func _initialize():
+func _schema_initialize():
 	add_valid_property("single")
-	is_validated = true
 
 func _preprocess_entry(entry: Dictionary):
 	entry.single_ = entry.single

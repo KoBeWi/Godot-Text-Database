@@ -71,3 +71,20 @@ func _ready() -> void:
 	
 	database = TextDatabase.load_database("res://CustomDatabase.gd", "res://SingleEntry.cfg")
 	assert(database.get_array().front().single__ == true)
+	
+	database = TextDatabase.new()
+	database.define_from_struct(Somethinger.new)
+	database.load_from_path("res://DataFolder/Data1.cfg")
+	
+	var loaded_array: Array[Somethinger]
+	loaded_array.assign(database.get_struct_array())
+	
+	assert(loaded_array[0].something)
+	
+	loaded_dict = database.get_struct_dictionary()
+	var sth: Somethinger = loaded_dict["Entry 1"]
+	
+	assert(sth.something)
+
+class Somethinger:
+	var something: bool

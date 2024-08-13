@@ -227,7 +227,7 @@ New in 1.3: Normally database entries are Dictionaries with the defined values. 
 
 To use structs, call `define_from_struct(constructor)` method, where `constructor` is a Callable that creates your struct, e.g. `Struct.new`. Afterwards you can use `get_struct_array()` or `get_struct_dictionary()` which will return your database with the provided struct as values.
 
-`define_from_struct()` will automatically add valid properties to your database, based on properties from the provided class, and using the struct's defaults as entry defaults. It also makes the database typed and validated. If you want to make some struct properties mandatory or change their validated type, use `override_property_mandatory()` and `override_property_type()`. The latter is useful when the property can't be stored in text form, but can be processed afterwards (e.g. texture is loaded from stored path).
+`define_from_struct()` will automatically add valid properties to your database, based on properties from the provided class, and using the struct's defaults as entry defaults. It also makes the database typed and validated. If you want to make some struct properties mandatory or change their validated type, use `override_property_mandatory()` and `override_property_type()`. The latter is useful when the property can't be stored in text form, but can be processed afterwards (e.g. texture is loaded from stored path). "id" and "name" properties are optional in struct and won't be assigned when not declared.
 
 When using custom database script, `define_from_struct()` should be called in `_initialize()`. It will automatically skip property definition in debug builds and only assign the constructor.
 
