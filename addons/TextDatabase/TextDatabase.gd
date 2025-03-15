@@ -59,17 +59,21 @@ func define_from_struct(constructor: Callable):
 ## Makes an existing property mandatory. Requires [method define_from_struct] to be called first. Used to customize struct properties.
 func override_property_mandatory(property: String):
 	assert(__struct_constructor.is_valid(), "define_from_struct() needs to be called first to override properties.")
+	if not OS.is_debug_build():
+		return
 	
 	for p in __valid_properties:
 		if p[0] == property:
 			__mandatory_properties.append(p)
 			return
 	
-	push_error("Failed to override property %s: does not exist.", property)
+	push_error("Failed to override property \"%s\": does not exist." % property)
 
 ## Changes the validated type of a property. Requires [method define_from_struct] to be called first. Used to customize struct properties, in case when the actual type can't be stored as text. When overriding type, make sure to assign correct value using [method _postprocess_entry].
 func override_property_type(property: String, type: int):
 	assert(__struct_constructor.is_valid(), "define_from_struct() needs to be called first to override properties.")
+	if not OS.is_debug_build():
+		return
 	
 	for p in __valid_properties:
 		if p[0] == property:
@@ -77,7 +81,7 @@ func override_property_type(property: String, type: int):
 			__default_values.erase(property)
 			return
 	
-	push_error("Failed to override property %s: does not exist.", property)
+	push_error("Failed to override property \"%s\": does not exist." % property)
 
 ## Adds a valid property with optionally provided type.
 func add_valid_property(property: String, type: int = TYPE_MAX):
