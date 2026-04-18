@@ -24,9 +24,9 @@ func _ready() -> void:
 	# Assign a post-processing lambda.
 	weapons.postprocess_entry = func(entry: Dictionary):
 		entry.element = Weapon.Element[entry.element]
-		entry.icon = load("res://" + entry.icon + ".png")
+		entry.icon = load("res://ExampleProject/" + entry.icon + ".png")
 	
-	weapons.load_from_path("res://Weapons.cfg")
+	weapons.load_from_path("res://ExampleProject/Weapons.cfg")
 	
 	# Create weapons, using proper icons and element colors.
 	for entry: Weapon in weapons.get_struct_array():
