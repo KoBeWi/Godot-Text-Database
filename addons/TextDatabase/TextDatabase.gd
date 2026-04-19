@@ -169,7 +169,7 @@ func get_struct_dictionary(skip_unnamed := false) -> Dictionary:
 		ret[key] = __make_struct(ret[key])
 	return ret
 
-## Returns number of entries in the database.
+## Returns the number of entries in this database.
 func size() -> int:
 	return __data.size()
 
@@ -202,7 +202,7 @@ func is_property_valid(entry: Dictionary, property: String, value = null) -> boo
 
 	return valid
 
-## Creates a TextDatabase from the given script and loads file(s) under provided path.
+## Creates a TextDatabase from the given script and loads file(s) under the provided path.
 static func load_database(database_script: String, path: String) -> TextDatabase:
 	var storage := load(database_script).new() as TextDatabase
 	assert(storage, "Invalid custom script: %s" % database_script)
@@ -255,7 +255,7 @@ func load_from_path(path: String):
 			
 			data = __config_file_to_array(file)
 		_:
-			push_error("Unrecognized extension '.%s', can't extract data." % path.get_extension())
+			push_error("Unrecognized extension \".%s\", can't extract data." % path.get_extension())
 			return
 	
 	for entry in data:
@@ -316,7 +316,7 @@ func __setup():
 	if not OS.is_debug_build():
 		return
 	
-	assert(not id_name.is_empty(), "'id_name' can't be empty String.")
+	assert(not id_name.is_empty(), "\"id_name\" can't be empty String.")
 	
 	for property in __valid_properties:
 		if property[1] != TYPE_MAX:
