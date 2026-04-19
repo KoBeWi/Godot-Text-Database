@@ -223,7 +223,7 @@ You can check the example project if you are still unsure. The class also includ
 
 ## RefCounted structs
 
-New in 1.3: Normally database entries are Dictionaries with the defined values. As an alternative you can use pseudo-structs extending RefCounted. The loading will be marginally slower, but it allows for overall safer code and better performance when accessing entry properties.
+Normally database entries are Dictionaries with the defined values. As an alternative you can use pseudo-structs extending RefCounted. The loading will be marginally slower, but it allows for overall safer code and better performance when accessing entry properties.
 
 To use structs, call `define_from_struct(constructor)` method, where `constructor` is a Callable that creates your struct, e.g. `Struct.new`. Afterwards you can use `get_struct_array()` or `get_struct_dictionary()` which will return your database with the provided struct as values.
 
